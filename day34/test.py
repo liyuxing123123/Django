@@ -11,3 +11,6 @@ def update_screen(ai_settings, screen, ship):
     # 让最近绘制的屏幕可见
     pygame.display.flip()
 
+
+print('hello world!')
+
