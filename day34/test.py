@@ -13,4 +13,6 @@ def update_screen(ai_settings, screen, ship):
 
 
 print('hello world!')
+print('hello python!')
+
 
