@@ -1,0 +1,966 @@
+python操作yaml说明
+ 更新时间：2020年04月08日 10:26:49   作者：BrownWong
+这篇文章主要介绍了python操作yaml说明，具有很好的参考价值，希望对大家有所帮助。一起跟随小编过来看看吧
+1. 安装PyYAML
+
+pip install PyYAML
+
+2. 加载yaml文件
+
+直接使用yaml.load()函数
+
+demo.yml :
+
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+ name: podinfo
+ namespace: yaml-demo
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: podinfo
+ template:
+  metadata:
+   labels:
+    app: podinfo
+  spec:
+   containers:
+   - name: podinfod
+    image: quay.io/stefanprodan/podinfo:0.3.0
+    ports:
+    - containerPort: 9898
+load.py :
+
+
+import yaml
+import json
+
+result = yaml.load(open('demo.yml'))
+print json.dumps(result, indent=2)
+输出 :
+
+
+{
+ "kind": "Deployment",
+ "spec": {
+  "replicas": 1,
+  "template": {
+   "spec": {
+    "containers": [
+     {
+      "image": "quay.io/stefanprodan/podinfo:0.3.0",
+      "name": "podinfod",
+      "ports": [
+       {
+        "containerPort": 9898
+       }
+      ]
+     }
+    ]
+   },
+   "metadata": {
+    "labels": {
+     "app": "podinfo"
+    }
+   }
+  },
+  "selector": {
+   "matchLabels": {
+    "app": "podinfo"
+   }
+  }
+ },
+ "apiVersion": "apps/v1",
+ "metadata": {
+  "namespace": "yaml-demo",
+  "name": "podinfo"
+ }
+}
+3. 持久化dict到yml文件
+
+使用yaml.safe_dump()函数
+
+dump.py :
+
+import yaml
+
+d = {
+ "kind": "Deployment",
+ "spec": {
+  "replicas": 1,
+  "template": {
+   "spec": {
+    "containers": [
+     {
+      "image": "quay.io/stefanprodan/podinfo:0.3.0",
+      "name": "podinfod",
+      "ports": [
+       {
+        "containerPort": 9898
+       }
+      ]
+     }
+    ]
+   },
+   "metadata": {
+    "labels": {
+     "app": "podinfo"
+    }
+   }
+  },
+  "selector": {
+   "matchLabels": {
+    "app": "podinfo"
+   }
+  }
+ },
+ "apiVersion": "apps/v1",
+ "metadata": {
+  "namespace": "yaml-demo",
+  "name": "podinfo"
+ }
+}
+result = yaml.safe_dump(d, encoding='utf-8', allow_unicode=True, default_flow_style=False)
+open('demo.yml', 'w').write(result)
+demo.yml :
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: podinfo
+ namespace: yaml-demo
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: podinfo
+ template:
+  metadata:
+   labels:
+    app: podinfo
+  spec:
+   containers:
+   - image: quay.io/stefanprodan/podinfo:0.3.0
+    name: podinfod
+    ports:
+    - containerPort: 9898
+补充知识：Python的PyYAML模块详解
+
+简介
+
+Python的PyYAML模块是Python的YAML解析器和生成器。
+
+安装
+
+简单安装
+
+pip install pyyaml
+
+从源码安装
+
+下载源码包PyYAML-3.13.tar.gz 并解压，在命令行下切换到解压后的包目录内并执行如下命令：
+
+python setup.py install
+
+如果想使用比纯Python版本更快的LibYAML绑定，需要先下载并安装LibYAML，然后在安装PyYAML的时候执行如下命令：
+
+python setup.py --with-libyaml install
+
+为了使用基于LibYAML的解析器和生成器，请使用 CParser 和 CEmitter 类。例如：
+
+
+from yaml import load, dump
+try:
+  from yaml import Cloader as Loader, CDumper as Dumper
+except ImportError:
+  from yaml import Loader, Dumper
+
+# ...
+
+data = load(stream, Loader=Loader)
+
+# ...
+
+output = dump(data, Dumper=Dumper)
+请注意，基于纯Python和基于LibYAML的YAML解析器和生成器之间有一些细微但并不真正重要的区别。
+
+最常被问到的问题
+
+为什么如下所示的YAML文档在反序列化后再序列化，得到的YAML文档的格式与原来不一样？
+
+
+import yaml
+document = """
+a: 1
+b:
+ c: 3
+ d: 4
+"""
+print(yaml.dump(yaml.load(document)))
+其中，上面代码的输出为：
+
+a: 1
+b: {c: 3, d: 4}
+
+关于这个问题，其实，尽管最后得到的YAML文档的样式与原来的文档的样式不一致，但是却是正确的结果。
+
+因为PyYAML默认会根据一个集合中是否有嵌套的集合来决定用哪种格式表示这个集合。如果一个集合中嵌套有其他集合，那么会使用块样式来表示，否则会使用流样式来表示。
+
+如果想要集合总是以块样式表示，可以将 dump() 方法的 default_flow_style 参数值设为 False ，如下所示：
+
+print(yaml.dump(yaml.load(document), default_flow_style=False))
+
+上面代码的输出为：
+
+a: 1
+b:
+c: 3
+d: 4
+
+使用详解
+
+先导入 yaml 模块：
+
+import yaml
+
+加载YAML
+
+警告：调用 yaml.load 处理从不可信任的源接收的数据可能存在风险。yaml.load 与 pickle.load 的功能一样强大，可以调用所有Python函数。
+
+yaml.load 函数的作用是用来将YAML文档转化成Python对象。如下所示：
+
+
+>>> yaml.load("""
+... - Hesperiidae
+... - Papilionidae
+... - Apatelodidae
+... - Epiplemidae
+... """)
+['Hesperiidae', 'Papilionidae', 'Apatelodidae', 'Epiplemidae']
+yaml.load 函数可以接受一个表示YAML文档的字节字符串、Unicode字符串、打开的二进制文件对象或者打开的文本文件对象作为参数。若参数为字节字符串或文件，那么它们必须使用 utf-8 、utf-16 或者 utf-16-le 编码。yaml.load 会检查字节字符串或者文件对象的BOM(byte order mark)并依此来确定它们的编码格式。如果没有发现 BOM ，那么会假定他们使用 utf-8 格式的编码。
+
+yaml.load 方法的返回值为一个Python对象，如下所示：
+
+
+>>> yaml.load("'hello': ''")
+{'hello': '\uf8ff'}
+>>> with open('document.yaml', 'w') as f:
+...   f.writelines('- Python\n- Ruby\n- Java')
+...
+>>> stream = open('document.yaml')
+>>> yaml.load(stream)
+['Python', 'Ruby', 'Java']
+
+如果字符串或者文件中包含多个YAML文档，那么可以使用 yaml.load_all 函数将它们全部反序列化，得到的是一个包含所有反序列化后的YAML文档的生成器对象：
+
+
+>>> documents = """
+... name: bob
+... age: 18
+... ---
+... name: alex
+... age: 20
+... ---
+... name: jason
+... age: 16
+... """
+>>> datas = yaml.load_all(documents)
+>>> datas
+<generator object load_all at 0x105682228>
+>>> for data in datas:
+...   print(data)
+...
+{'name': 'bob', 'age': 18}
+{'name': 'alex', 'age': 20}
+{'name': 'jason', 'age': 16}
+PyYAML允许用户构造任何类型的Python对象，如下所示：
+
+
+>>> document = """
+... none: [~, null]
+... bool: [true, false, on, off]
+... int: 55
+... float: 3.1415926
+... list: [Red, Blue, Green, Black]
+... dict: {name: bob, age: 18}
+... """
+>>> yaml.load(document)
+{'none': [None, None], 'bool': [True, False, True, False], 'int': 55, 'float': 3.1415926, 'list': ['Red', 'Blue', 'Green', 'Black'], 'dict': {'name': 'bob', 'age': 18}}
+即使是Python 类的实例，也可以使用标签 !!python/object 来进行构建，如下所示：
+
+
+>>> class Person:
+...   def __init__(self, name, age, gender):
+...     self.name = name
+...     self.age = age
+...     self.gender = gender
+...   def __repr__(self):
+...     return f"{self.__class__.__name__}(name={self.name!r}, age={self.age!r}, gender={self.gender!r})"
+...
+>>> yaml.load("""
+... !!python/object:__main__.Person
+... name: Bob
+... age: 18
+... gender: Male
+... """)
+Person(name='Bob', age=18, gender='Male')
+注意，如果从不信任的源(例如互联网)接收一个YAML文档并由此构建一个任意的Python对象可能存在一定的风险。而使用 yaml.safe_load 方法能够将这个行为限制为仅构造简单的Python对象，如整数或者列表。
+
+定义一个继承自yaml.YAMLObject 类的子类，然后将这个子类的类属性 yaml_loader 的值设置为 yaml.SafeLoader ，这样，这个类的对象就被标记为是安全的，从而可以被 yaml.safe_load 方法识别。不过有一点需要注意，在反序列化这样的Python对象时，只能使用 safe_load 和 safe_load_all 方法。
+
+转储YAML
+
+yaml.dump 函数接受一个Python对象并生成一个YAML文档。
+
+
+>>> import yaml
+>>> emp_info = { 'name': 'Lex',
+... 'department': 'SQA',
+... 'salary': 8000,
+... 'annual leave entitlement': [5, 10]
+... }
+>>> print(yaml.dump(emp_info))
+annual leave entitlement: [5, 10]
+department: SQA
+name: Lex
+salary: 8000
+
+yaml.dump 可以接受第二个可选参数，用于写入生成的YAML文本，这个参数的值可以是打开的文本或者二进制文件对象。如果不提供这个可选参数，则直接返回生成的YAML文档。
+
+
+>>> with open('document.yaml', 'w') as f:
+...   yaml.dump(emp_info, f)
+...
+>>> import os
+>>> os.system('cat document.yaml')
+annual leave entitlement: [5, 10]
+department: SQA
+name: Lex
+salary: 8000
+0
+如果要将多个Python对象序列化到一个YAML流中，可以使用 yaml.dump_all 函数。该函数接受一个Python的列表或者生成器对象作为第一个参数，表示要序列化的多个Python对象。
+
+>>> obj = [{'name': 'bob', 'age': 19}, {'name': 20, 'age': 23}, {'name': 'leo', 'age': 25}]
+>>> print(yaml.dump_all(obj))
+{age: 19, name: bob}
+--- {age: 23, name: 20}
+--- {age: 25, name: leo}
+你甚至可以序列化一个Python类的实例，如下所示：
+
+
+>>> class Person:
+...   def __init__(self, name, age, gender):
+...     self.name = name
+...     self.age = age
+...     self.gender = gender
+...   def __repr__(self):
+...     return f"{self.__class__.__name__}(name={self.name!r}, age={self.age!r}, gender={self.gender!r})"
+...
+>>> print(yaml.dump(Person('Lucy', 26, 'Female')))
+!!python/object:__main__.Person {age: 26, gender: Female, name: Lucy}
+yaml.dump 和 yaml.dump_all 方法还支持多个关键字参数，用来指定生成的YAML流中YAML文档的样式和是否包含其他信息。下面就来详细介绍下每个参数的含义和用法。
+
+stream
+
+指定由于输出YAML流的打开的文件对象。默认值为 None，表示作为函数的返回值返回。
+
+default_flow_style
+
+是否默认以流样式显示序列和映射。默认值为 None，表示对于不包含嵌套集合的YAML流使用流样式。设置为 True 时，序列和映射使用块样式。
+
+default_style
+
+默认值为 None。表示标量不使用引号包裹。设置为 '"' 时，表示所有标量均以双引号包裹。设置为 "'" 时，表示所有标量以单引号包裹。
+
+canonical
+
+是否以规范形式显示YAML文档。默认值为 None，表示以其他关键字参数设置的值进行格式化，而不使用规范形式。设置为 True 时，将以规范形式显示YAML文档中的内容。
+
+indent
+
+表示缩进级别。默认值为 None， 表示使用默认的缩进级别（两个空格），可以设置为其他整数。
+
+width
+
+表示每行的最大宽度。默认值为 None，表示使用默认的宽度80。
+
+allow_unicode
+
+是否允许YAML流中出现unicode字符。默认值为 False，会对unicode字符进行转义。设置为 True 时，YAML文档中将正常显示unicode字符，不会进行转义。
+
+line_break
+
+设置换行符。默认值为 None，表示换行符为 ''，即空。可以设置为 \n、\r 或 \r\n。
+
+encoding
+
+使用指定的编码对YAML流进行编码，输出为字节字符串。默认值为 None，表示不进行编码，输出为一般字符串。
+
+explicit_start
+
+每个YAML文档是否包含显式的指令结束标记。默认值为 None，表示流中只有一个YAML文档时不包含显式的指令结束标记。设置为 True 时，YAML流中的所有YAML文档都包含一个显式的指令结束标记。
+
+explicit_end
+
+每个YAML文档是否包含显式的文档结束标记。默认值为 None，表示流中的YAML文档不包含显式的文档结束标记。设置为 True 时，YAML流中的所有YAML文档都包含一个显式的文档结束标记。
+
+version
+
+用于在YAML文档中指定YAML的版本号，默认值为 None，表示不在YAML中当中指定版本号。可以设置为一个包含两个元素的元组或者列表，但是第一个元素必须为1，否则会引发异常。当前可用的YAML的版本号为1.0、1.1 和1.2。
+
+tags
+
+用于指定YAML文档中要包含的标签。默认值为 None，表示不指定标签指令。可以设置为一个包含标签的字典，字典中的键值对对应各个不同的标签名和值。
+
+
+>>> data = {'code': 200, 'status': 'success', 'message': [10, True, "Got it"]}
+>>> print(yaml.dump(data, version=(1, 2))) # 设置YAML版本
+%YAML 1.2
+---
+code: 200
+message: [10, true, Got it]
+status: success
+
+>>> print(yaml.dump(data, version=(1, 2), tags={'!name!': 'test'})) # 设置标签指令
+%YAML 1.2
+%TAG !name! test
+---
+code: 200
+message: [10, true, Got it]
+status: success
+
+>>> print(yaml.dump(data, # 设置使用块样式
+...         version=(1, 2),
+...         tags={'!name!': 'test'},
+...         default_flow_style=False))
+%YAML 1.2
+%TAG !name! test
+---
+code: 200
+message:
+- 10
+- true
+- Got it
+status: success
+
+>>> print(yaml.dump(data, # 设置标量使用单引号包裹
+...         version=(1, 2),
+...         tags={'!name!': 'test'},
+...         default_flow_style=False,
+...         default_style="'"))
+%YAML 1.2
+%TAG !name! test
+---
+'code': !!int '200'
+'message':
+- !!int '10'
+- !!bool 'true'
+- 'Got it'
+'status': 'success'
+
+>>> print(yaml.dump(data, # 设置标量使用双引号包裹
+...         version=(1, 2),
+...         tags={'!name!': 'test'},
+...         default_flow_style=False,
+...         default_style='"'))
+%YAML 1.2
+%TAG !name! test
+---
+"code": !!int "200"
+"message":
+- !!int "10"
+- !!bool "true"
+- "Got it"
+"status": "success"
+
+>>> print(yaml.dump(data, # 设置YAML文档包含显式的指令结束标记和文档结束标记
+...         explicit_start=True,
+...         explicit_end=True))
+---
+code: 200
+message: [10, true, Got it]
+status: success
+...
+
+>>> print(yaml.dump(data, canonical=True)) # 设置文档使用规范形式
+---
+!!map {
+ ? !!str "code"
+ : !!int "200",
+ ? !!str "message"
+ : !!seq [
+  !!int "10",
+  !!bool "true",
+  !!str "Got it",
+ ],
+ ? !!str "status"
+ : !!str "success",
+}
+
+>>> print(yaml.dump(data, encoding='utf-8')) # 将YAML流使用utf-8格式进行编码
+b'code: 200\nmessage: [10, true, Got it]\nstatus: success\n'
+>>> user_info = {'name': '张学友', 'age': 57, '外号': ['歌神', '乌蝇哥']}
+>>> print(yaml.dump(user_info)) # 若不设置 allow_unicode 参数，则unicode字符会转义
+age: 57
+name: "\u5F20\u5B66\u53CB"
+"\u5916\u53F7": ["\u6B4C\u795E", "\u4E4C\u8747\u54E5"]
+
+>>> print(yaml.dump(user_info, allow_unicode=True)) # 设置允许包含unicode字符
+age: 57
+name: 张学友
+外号: [歌神, 乌蝇哥]
+构造、表示和解析
+
+可以定义自己的特定于应用程序的标记。最简单的方法是定义 yaml.YAMLObject 的子类，如下所示：
+
+
+>>> class Person(yaml.YAMLObject):
+...   yaml_tag = '!Person'
+...   def __init__(self, name, age, gender):
+...     self.name = name
+...     self.age = age
+...     self.gender = gender
+...   def __repr__(self):
+...     return f"{self.__class__.__name__}(name={self.name!r}, age={self.age!r}, gender={self.gender!r})"
+...
+如上的定义已经足够自动化反序列化和序列化 Person 对象：
+
+
+>>> text = """
+... --- !Person
+... name: Bob
+... age: 22
+... gender: Male
+... """
+>>> yaml.load(text)
+Person(name='Bob', age=22, gender='Male')
+>>> print(yaml.dump(Person('Bob', 22, 'Male')))
+!Person {age: 22, gender: Male, name: Bob}
+yaml.YAMLObject 使用元类魔法注册了一个用来将YAML节点转换为类实例的 constructors 和用来将YAML节点反序列化为Python类实例的表示器 representers。
+
+如果你不想使用元类，你可以使用 yaml.add_constructor 和 yaml.add_representer 来注册你的 constructors 和 representers。如下所示：
+
+
+>>> class Dice(tuple):
+...   def __new__(cls, a, b):
+...     return tuple.__new__(cls, [a, b])
+...   def __repr__(self):
+...     return 'Dice(%s, %s)' % self
+...
+>>> print(Dice(3, 6))
+Dice(3, 6)
+默认的 Dice 对象的表示看起来不太美观：
+
+1
+2
+3
+>>> print(yaml.dump(Dice(3, 6)))
+!!python/object/new:__main__.Dice
+- !!python/tuple [3, 6]
+假如你想要一个 Dice 对象序列化后表示成 AdB 这样的形式，例如：
+
+print(yaml.dump(Dict(3, 6))) # 期待输出为：3d6
+
+首先，需要定义一个用来将 Dict 对象转化成使用 !dict 标签标记的标量节点的 *representers，然后注册它，如下所示：
+
+>> def dice_representer(dumper, data):
+...   return dumper.represent_scalar('!dice', '%sd%s' % data)
+...
+>>> yaml.add_representer(Dice, dice_representer)
+现在，序列化一个 Dice 对象的实例后的输入就与期望的一样了：
+
+1
+2
+3
+>>> yaml.add_representer(Dice, dice_representer)
+>>> print(yaml.dump({'gold': Dice(10, 6)}))
+{gold: !dice '10d6'}
+下面，我们再来实现一个将使用 !dice 标签标记的标量节点转化为 Dice 对象的 constructor 并注册它：
+
+
+>>> def dice_constructor(loader, node):
+...   value = loader.construct_scalar(node)
+...   a, b = map(int, value.split('d'))
+...   return Dice(a, b)
+...
+>>> yaml.add_constructor('!dice', dice_constructor)
+
+然后，你就可以加载一个 Dice 对象了：
+
+
+>>> text = 'initial hit points: !dice 8d4'
+>>> print(yaml.load(text))
+{'initial hit points': Dice(8, 4)}
+如果你不想在任何地方都指定 !dice 标签，那么可以使用 add_implicit_resolver 函数告诉PyYAML所有未标记的形如 XdY 的普通标量具有显式标签 !dice，如下所示：
+
+
+>>> import re
+>>> pattern = re.compile(r'^\d+d\d+$')
+>>> yaml.add_implicit_resolver('!dice', pattern)
+现在，在定义 Dice 对象的时候可以不使用标签了，如下所示：
+
+
+>>> print(yaml.dump({'treasure': Dice(10, 20)}))
+{treasure: 10d20}
+
+>>> print(yaml.load('damage: 5d10'))
+{'damage': Dice(5, 10)}
+当将一个对象标记为安全的时候，在反序列化这样的对象时只能使用 safe_load 或 safe_load_all 方法，否则会报错，如下所示：
+
+
+>>> class Person(yaml.YAMLObject):
+...   yaml_tag = '!Person'
+...   yaml_loader = yaml.SafeLoader
+...   def __init(self, name, age, gender):
+...     self.name = name
+...     self.age = age
+...     self.gender = gender
+...   def __repr__(self):
+...     return f"Person(name={self.name!r}, age={self.age!r}, gender={self.gender!r})"
+...
+>>> text = """
+... !Person
+... name: Bob
+... age: 22
+... gender: Male
+... """
+>>> yaml.load(text) # 不使用 safe_load 或 safe_load_all 方法会报错
+Traceback (most recent call last):
+ ...
+yaml.constructor.ConstructorError: could not determine a constructor for the tag '!Person'
+ in "<unicode string>", line 2, column 1:
+  !Person
+  ^
+>>> yaml.safe_load(text) # 使用 safe_load 方法可以正常反序列化
+Person(name='Bob', age=22, gender='Male')
+YAML语法
+
+这一部分将介绍最常见的YAML结构以及相应的Python对象。
+
+文档
+
+YAML流是零个或多个YAML文档的集合。空的YAML流不包含YAML文档。YAML文档间用文档开始标记 --- 进行分隔。YAML文档可以包含一个可选的文档结束标记 ... 。如果流中只有一个文档，那么可以不使用文档开始标记。包含文档开始标记的文档可以称为 显式文档 ，不包含文档开始标记的文档可以称为 隐式文档。
+
+下面是一个隐式文档：
+
+- Multimedia
+- Internet
+- Education
+
+下面是一个显式文档：
+
+---
+- Afterstep
+- CTWM
+- Oroborus
+...
+
+下面是一个包含多个文档的YAML流：
+
+---
+- Employee
+- Manager
+- CEO
+- CTO
+---
+- Student
+---
+- C
+- C# # YAML中使用‘#' 来表示注释（‘#'前面要有一个空格）
+- C++
+- Cold Fusion
+
+块序列
+
+在块内容中，使用破折号(dash) - 后跟一个空格（Space）来表示序列中的项。
+
+下面是一个包含块序列的文档：
+
+- id
+- name
+- age
+
+上述文档表示的一个如下的Python对象：
+
+['id', 'name', 'age']
+
+块序列是可以嵌套的：
+
+-
+- Python
+- Ruby
+- JavaScript
+- PHP
+-
+- Unix
+- Linux
+- Windows
+
+上述文档表示如下的Python对象：
+
+[['Python', 'Ruby', 'JavaScript', 'PHP'], ['Unix', 'Linux', 'Windows']]
+
+在嵌套的块序列中，内层的序列可以直接从当前行开始而不必从新的一行开始，如下所示：
+
+- - Python
+- Ruby
+- JavaScript
+- PHP
+- - Unix
+- Linux
+- Windows
+
+块序列中可以嵌套在块映射之中，在这种情况下，块序列不需要缩进，如下所示：
+
+Programing Languages：
+- Java
+- Swift
+- C++
+- Go
+Operation System：
+- Unix
+- Linux
+- Windows
+- OSX
+
+上述文档表示如下的Python对象：
+
+
+{'Programing Languages': ['Java', 'Swift', 'C++', 'Go'],
+ 'Operation System': ['Unix', 'Linux', 'Windows']}
+块映射
+
+块内容中，使用冒号 : 后跟一个空格来分隔映射中的键和值。
+
+
+name: bob
+age: 28
+gender: Male
+上述文档表示如下的Python对象：
+
+{'name': 'bob', 'age': 28, 'gender': 'Male'}
+
+复杂的键使用问号 ? 后跟一个空格来表示，如下所示：
+
+
+? !!python/tuple [0, 0]
+: Start
+? !!python/tuple [3, 5]
+: End
+上述文档表示如下的Python 对象：
+
+{(0, 0): 'Start', (3, 5): 'End'}
+
+块映射是可以嵌套的，如下所示：
+
+
+Employee:
+ Job_title: Employee
+ Salary: 5000
+ Annual Leave: 10
+Manager:
+ Job_title: Manager
+ Salary: 8000
+ Annual Leave: 15
+上述文档表示如下的Python对象：
+
+{'Employee': {'Job_title': 'Employee', 'Salary': 5000, 'Annual Leave': 10},
+'Manager': {' Job_title': 'Manager', 'Salary': 8000, 'Annual Leave': 15}}
+
+块映射可以嵌套在块序列中，如下所示：
+
+- name: PyYAML
+status: 4
+license: MIT
+language: Python
+- name: PySyck
+status: 5
+license: BSD
+language: Python
+
+上述文档表示如下的Python对象：
+
+[{'name': 'PyYAML', 'status': 4, 'license': 'MIT', 'language': 'Python'},
+{'name': 'PySyck', 'status': 5, 'license': 'BSD', 'language': 'Python'}]
+
+流集合
+
+YAML中流集合的语法与Python中列表和字典结构的语法很像，如下所示：
+
+{ str: [15, 17], con: [16, 16], dex: [17, 18], wis: [16, 16], int: [10, 13], chr: [5, 8] }
+
+上述文档表示如下的Python对象：
+
+{'dex': [17, 18], 'int': [10, 13], 'chr': [5, 8], 'wis': [16, 16], 'str': [15, 17], 'con': [16, 16]}
+
+标量
+
+YAML中的标量共有5中样式，其中块标量有两种样式：
+
+文字样式（literal style）
+
+折叠样式（folded style）
+
+流标量有三种样式：
+
+普通样式（plain style）
+
+单引号样式（single-quoted style）
+
+双引号样式（double-quoted style）
+
+这五种样式的示例如下：
+
+plain: Hello World
+single-quoted: '所有内容都会原样输出'
+double-quoted: "需要用反斜杠转移特殊字符"
+literal: |
+每一行
+都会
+包含换行符
+中间的每一个空行
+
+都会用换行符代替
+folded: >
+除过最后一行的
+换行符
+会保留
+其他行末尾的换行符
+都会使用一个空格代替
+中间的空行
+
+将会使用一个换行符代替
+上述文档表示如下的Python对象：
+
+{'plain': 'Hello World',
+'single-quoted': '所有内容都会原样输出',
+'double-quoted': '需要用反斜杠转移特殊字符',
+'literal': '每一行\n都会\n包含换行符\n中间的每一个空行\n\n都会用换行符代替\n',
+'folded': '除过最后一行的 换行符 会保留 其他行末尾的换行符 都会使用一个空格代替 中间的空行\n将会使用一个换行符代替\n'}
+
+每种样式都有其特点。普通标量不使用指示符来表示其开始和结束，因此它是最受限制的样式。普通标量自然适用于表示参数和属性的名称
+
+使用单引号标量，可以表示不包含特殊字符的任何值。单引号标量不存在转义，除非是一对相邻的引号 '' 被单引号所替换”。
+
+双引号是最强大的样式，也是惟一可以表示任何标量值的样式。双引号标量内的字符允许转义。使用转义序列 \x* 和 \u*** ，可以表达任何ASCII或Unicode字符。
+
+块标量样式有两种：文字样式和折叠样式。文字样式是最适合于大型文本块(如源代码)的样式。折叠样式类似于文字样式，但是两个相邻的非空行中间的换行符会被替换成一个空格从而变成一行。
+
+别名
+
+使用YAML可以表示任何类图结构的对象。如果希望从文档的不同部分引用相同的对象，则需要使用锚和别名。
+
+其中，锚用 & 表示，别名用 * 表示。下面的例子将会演示锚和别名的使用：
+
+emp1: &A
+ name: bob
+ age: 28
+ gender: Male
+emp2: *A
+上述文档表示如下的Python对象：
+
+{'emp1': {'name': 'bob', 'age': 28, 'gender': 'Male'},
+'emp2': {'name': 'bob', 'age': 28, 'gender': 'Male'}}
+PyYAML现在已经支持递归对象，下面的文档表示一个Python的列表，这个列表的元素是这个列表自身。
+
+&A [ *A ]
+标签
+标签用来标识节点的数据类型。标准的YAML标签的定义可以参考该文档：
+
+http://yaml.org/type/index.html
+
+标签可以是隐式地，如下所示：
+
+boolen: true
+integer: 3
+float: 3.14
+上述文档表示如下的Python对象：
+
+{'boolean': True, 'integer': 3, 'float': 3.14}
+标签也可以是显式的，如下所示：
+
+boolean: !!bool "true"
+integer: !!int "3"
+float: !!float "3.14"
+上述文档表示如下的Python对象：
+
+{'boolean': True, 'integer': 3, 'float': 3.14}
+没有显式定义标签的普通标量受制于隐式标签解析。隐式标签解析根据一组正则表达式检查标量值，如果其中一个匹配，则为标量分配相应的标记。PyYAML允许应用程序添加自定义隐式标签解析器。
+
+YAML标签和Python3 对象
+YAML 标签	Python对象
+标准的YAML标签
+!!null	None
+!!bool	bool
+!!int	int
+!!float	float
+!!binary	bytes
+!!timestamp	datetime.datetime
+!!omap, !!pairs	元素为一个二元组的list
+!!set	set
+!!str	str
+!!seq	list
+!!map	dict
+Python的特殊标签
+!!python/none	None
+!!python/bool	bool
+!!python/bytes	bytes
+!!python/str	str
+!!python/unicode	str
+!!python/int	int
+!!python/long	int
+!!python/float	float
+!!python/complex	complex
+!!python/list	list
+!!python/tuple	tuple
+!!python/dict	dict
+复杂的Python标签
+!!python/name:module.name	module.name
+!!python/module:package.module	package.module
+!!python/object:module.cls	module.cls 的实例
+!!python/object/new:module.cls	module.cls 的实例
+!!python/object/apply:module.func	方法 func(...)的返回值
+字符串转换
+
+在Python3中，str 类型的对象将被转变成使用标签 !!str 标识的标量；bytes 类型的对象将被转变成使用标签 !!binary 标识的标量。为了考虑兼容性，标签 !!python/str 和 !!python/unicode 仍然可以使用，被其标识的标量将被转变成 str 类型的对象。
+
+名称和模块
+
+要表示静态的Python对象，如函数和类，可以使用复杂的标签Python !!python/name 。下面的例子演示了如何表示yaml模块中的dump方法：
+
+!!python/name:yaml.dump
+
+类似的，模块可以使用标签 !!python/module :
+
+!!python/module.yaml
+
+对象
+
+任何 pickleable 对象都可以使用标签 !!python/object 来序列化：
+
+!!python/object:module.Class { attribute: value, ... }
+
+为了支持 pickle 协议，PyYAML提供了两个附加的标签
+
+!!python/object/new:module.Class 和 !!python/object/apply:module.function
+
+这两个标签的使用方法如下：
+
+
+!!python/object/new:module.Class
+args: [argument, ...]
+kwds: {key: value, ...}
+stat: ...
+listitems: [item, ...]
+dictitems: [key: value, ...]
+
+!!python/object/apply:module.function
+args: [argument, ...]
+kwds: {key: value, ...}
+state: ...
+listitems: [item, ...]
+dictitems: [key: value, ...]

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form enctype="multipart/form-data">
+        <div>
+            <select name="city" size="10" multiple="multiple">
+            <optgroup label="HB">
+                <option value="1">BJ</option>
+            </optgroup>
+                <option value="2" selected="selected">SH</option>
+                <option value="3">CH</option>
+                <option value="4">NJ</option>
+            </select>
+
+            <input type="text" name="user">
+            <p>
+                请选择性别：
+            </p>
+            男：<input type="radio" name="gender" value="1" checked="checked"/>
+            女：<input type="radio" name="gender" value="2"/>
+            Alex：<input type="radio" name="gender" value="3"/>
+            <p>
+                爱好
+            </p>
+            篮球：<input type="checkbox" name="favor" value="1"/>
+            足球：<input type="checkbox" name="favor" value="2" checked="checked"/>
+            台球：<input type="checkbox" name="favor" value="3"/>
+            网球：<input type="checkbox" name="favor" value="4"/>
+            棒球：<input type="checkbox" name="favor" value="5"/>
+            <p>技能</p>
+            编程：<input type="checkbox" name="skill checked="checked"">
+            网络：<input type="checkbox" name="skill">
+            <p>上传文件</p>
+            <input type="file" name="fname" />
+        </div>
+
+        <textarea name="meno" >default value</textarea>
+        <br />
+
+        <input type="submit" value="提交" />
+        <input type="reset" value="重置" />
+    </form>
+</body>
+</html>

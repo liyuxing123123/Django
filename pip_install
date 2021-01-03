@@ -1,0 +1,21 @@
+pip 更新python -m pip install --upgrade pip 报错（终极解决办法，有用！！！）
+
+qq_38990397 2019-06-21 15:02:45  15098  收藏 93
+文章标签： Python pip
+版权
+在更新python的时候，出现
+在这里插入图片描述
+提示我可用的有19.0.3的版本可用，说明我的pip版本太低了，需要升级。
+python -m pip install --upgrade pip’，但是提示安装失败。
+
+试了很多方法，简单粗暴的就是：
+这个时候可以去到你的安装目录，找到site-packages文件夹，把原来的pip-10.0.1.dist-info这个消息目录删除，（经过询问，很多同学的安装不成功都是和这个目录有关系）。下图我是删除后重新升级并自动升级的目录。
+在这里插入图片描述
+如果这时候还是更新不了！
+那就可能是网络的问题，用国内的源下载：
+
+python -m pip install --upgrade pip -i https://pypi.douban.com/simple
+
+jupyter notebook能用，但是无法连接服务器？？
+
+执行：>> pip install --upgrade ipykernel -i https://pypi.douban.com/simple

@@ -1,0 +1,4 @@
+configure terminal
+vlan 200
+end
+wr mem

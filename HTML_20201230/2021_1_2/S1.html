@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .hide{
+            display: none;
+        }
+        .c1{
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-color: black;
+            opacity: 0.6;
+            z-index: 9;
+        }
+        .c2{
+            width: 500px;
+            height: 400px;
+            background-color: white;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            margin-left: -250px;
+            margin-top: -200px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body style="margin: 0;">
+
+    <div>
+        <input type="button" value="添加" onclick="ShowModel();" />
+        <table>
+            <thead>
+                <tr>
+                    <th>主机名</th>
+                    <th>端口</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.1.1.1</td>
+                    <td>8081</td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td>2.2.2.2</td>
+                    <td>8082</td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td>3.3.3.3</td>
+                    <td>8083</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id = "i1" class="c1 hide"></div>
+
+    <div id="i2" class="c2 hide">
+         <p>
+             <input type="text" />
+             <input type="button" value="确定" />
+         </p>
+         <p>
+             <input type="text" />
+             <input type="button" value="取消" onclick="HideModel();" />
+         </p>
+         <p>
+             <input type="button" value="取消" onclick="HideModel();" />
+             <input type="button" value="确定" />
+         </p>
+    </div>
+
+    <script>
+        function ShowModel() {
+            document.getElementById('i1').classList.remove('hide');
+            document.getElementById('i2').classList.remove('hide');
+        }
+        function HideModel() {
+            document.getElementById('i1').classList.add('hide');
+            document.getElementById('i2').classList.add('hide');
+        }
+    </script>
+
+</body>
+</html>

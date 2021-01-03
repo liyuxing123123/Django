@@ -1,0 +1,15 @@
+show clock
+
+enable pass cisco
+username python pri 15 pass cisco
+int vlan 1
+ip add 192.168.27.115 255.255.255.0
+no sh
+exit
+ip domain-name cisco.com
+crypto key gen rsa modul 1024
+line vty 0 4
+login local
+end
+wr mem
+
